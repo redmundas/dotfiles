@@ -1,0 +1,29 @@
+#! /bin/sh
+
+GIT_COLOR="#f14e32"
+
+git_color_text () {
+  gum style --foreground "$GIT_COLOR" "$1"
+}
+
+echo ""
+echo "Choose a $(git_color_text "context"):"
+context=$(gum choose --cursor.foreground="$GIT_COLOR" testnet mainnet)
+echo ""
+
+echo ""
+echo "Choose a $(git_color_text "service"):"
+service=$(gum choose --cursor.foreground="$GIT_COLOR" supertokens mysteriumvpn)
+echo ""
+
+case $service in
+  mysteriumvpn)
+    pod=$(kubectl --context testnet get pods -n pg-db -o name | grep mysteriumvpn-api | head -n 1)
+    echo "kubectl port-forward --context $context -n pg-db "$pod" 5432:5432"
+    kubectl port-forward --context "$context" -n pg-db "$pod" 5432:5432
+    ;;
+  supertokens)
+    echo "kubectl port-forward --context $context -n supertokens deployment/testnet-supertokens 8080:8080"
+    kubectl port-forward --context "$context" -n supertokens deployment/testnet-supertokens 8080:8080
+    ;;
+esac
